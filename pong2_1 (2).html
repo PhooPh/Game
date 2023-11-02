@@ -1,0 +1,110 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <title>Pong Game</title>
+    <style>
+        canvas {
+            background: black;
+            display: block;
+            margin: 0 auto;
+        }
+    </style>
+</head>
+<body>
+    <canvas id="pong" width="800" height="400"></canvas>
+    <script>
+        const canvas = document.getElementById("pong");
+        const ctx = canvas.getContext('2d');
+
+        const paddleWidth = 10;
+        const paddleHeight = 100;
+        const ballRadius = 10;
+
+        let userPaddleY = (canvas.height - paddleHeight) / 2;
+        let computerPaddleY = (canvas.height - paddleHeight) / 2;
+        let ballX = canvas.width / 2;
+        let ballY = canvas.height / 2;
+        let ballSpeedX = 5;
+        let ballSpeedY = 5;
+
+        let playerScore = 0;
+        let computerScore = 0;
+
+        function draw() {
+            // Clear the canvas
+            ctx.clearRect(0, 0, canvas.width, canvas.height);
+
+            // Draw paddles
+            ctx.fillStyle = 'white';
+            ctx.fillRect(0, userPaddleY, paddleWidth, paddleHeight);
+            ctx.fillRect(canvas.width - paddleWidth, computerPaddleY, paddleWidth, paddleHeight);
+
+            // Draw the ball
+            ctx.beginPath();
+            ctx.arc(ballX, ballY, ballRadius, 0, Math.PI * 2);
+            ctx.fill();
+
+            // Draw the scores
+            ctx.font = '30px Arial';
+            ctx.fillText(`Player: ${playerScore}`, 100, 50);
+            ctx.fillText(`Computer: ${computerScore}`, canvas.width - 300, 50);
+        }
+
+        function update() {
+            // Move the ball
+            ballX += ballSpeedX;
+            ballY += ballSpeedY;
+
+            // Ball collision with top and bottom walls
+            if (ballY < 0 || ballY > canvas.height) {
+                ballSpeedY = -ballSpeedY;
+            }
+
+            // Ball collision with paddles
+            if (
+                (ballX < paddleWidth && ballY > userPaddleY && ballY < userPaddleY + paddleHeight) ||
+                (ballX > canvas.width - paddleWidth && ballY > computerPaddleY && ballY < computerPaddleY + paddleHeight)
+            ) {
+                ballSpeedX = -ballSpeedX;
+            }
+
+            // Ball out of bounds
+            if (ballX < 0) {
+                computerScore++;
+                resetBall();
+            } else if (ballX > canvas.width) {
+                playerScore++;
+                resetBall();
+            }
+
+            // Computer AI
+            const computerPaddleCenter = computerPaddleY + paddleHeight / 2;
+            if (ballY < computerPaddleCenter - paddleHeight / 3) {
+                computerPaddleY -= 5;
+            } else if (ballY > computerPaddleCenter + paddleHeight / 3) {
+                computerPaddleY += 5;
+            }
+        }
+
+        function resetBall() {
+            ballX = canvas.width / 2;
+            ballY = canvas.height / 2;
+            ballSpeedX = 5;
+            ballSpeedY = 5;
+        }
+
+        function gameLoop() {
+            draw();
+            update();
+            requestAnimationFrame(gameLoop);
+        }
+
+        canvas.addEventListener('mousemove', (e) => {
+            const mouseY = e.clientY - canvas.getBoundingClientRect().top;
+            userPaddleY = mouseY - paddleHeight / 2;
+        });
+
+        gameLoop();
+    </script>
+</body>
+</html>
